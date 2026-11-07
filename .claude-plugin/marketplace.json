@@ -1,0 +1,12 @@
+{
+  "name": "marcothebeast90-plugins",
+  "description": "Claude plugins by Marco Zuin for precision and long-range shooting.",
+  "owner": { "name": "Marco Zuin", "url": "https://github.com/marcothebeast90" },
+  "plugins": [
+    {
+      "name": "long-range-ballistics",
+      "source": "./",
+      "description": "Internal and external ballistics for long-range rifle shooters and handloaders."
+    }
+  ]
+}

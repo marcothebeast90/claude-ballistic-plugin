@@ -14,7 +14,8 @@ A Claude plugin for long-range rifle shooters and handloaders, covering internal
 
 ## Install
 
-In Claude Code: `/plugin install long-range-ballistics --marketplace marcothebeast90/claude-ballistic-plugin` once listed, or load the folder with `claude --plugin-dir`. In the Claude apps, install it from the directory once it is listed.
+- **Claude Code**: `/plugin marketplace add marcothebeast90/claude-ballistic-plugin`, then `/plugin install long-range-ballistics@marcothebeast90-plugins`.
+- **Claude apps (claude.ai, desktop, mobile)**: install it from Anthropic's plugin directory once it is listed, or upload the skill folder `skills/long-range-ballistics` as a zip under Customize > Skills.
 
 ## Use it
 
