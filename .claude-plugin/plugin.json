@@ -1,0 +1,21 @@
+{
+  "name": "long-range-ballistics",
+  "displayName": "Long-Range Ballistics",
+  "version": "1.0.0",
+  "description": "Internal and external ballistics for long-range rifle shooters and handloaders: load and pressure analysis from published data and simulation, trajectory and wind solutions, bullet stability. Never invents load data, BC or powder parameters.",
+  "author": {
+    "name": "Marco Zuin",
+    "url": "https://github.com/marcothebeast90"
+  },
+  "license": "MIT",
+  "keywords": [
+    "ballistics",
+    "long-range",
+    "shooting",
+    "reloading",
+    "handloading",
+    "trajectory",
+    "precision-rifle"
+  ],
+  "repository": "https://github.com/marcothebeast90/claude-ballistic-plugin"
+}
