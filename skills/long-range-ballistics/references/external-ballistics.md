@@ -51,18 +51,18 @@
 
 - Lag-time rule (point-mass, exact for constant crosswind and no lift): drift = W_cross · (TOF − R/V₀).
 - Only the crosswind component matters for drift: W_cross = W·sin(angle). Clock system: 3 and 9 o'clock = full value; 1:30, 4:30, 7:30, 10:30 ≈ 70 %; 12 and 6 ≈ 0 (head/tailwind changes elevation slightly).
-- Wind varies along the path and every part of it contributes to drift. Estimate an average crosswind for the whole path; the scripts assume one constant wind.
+- Wind varies along the path and every part of it contributes to drift. Estimate an average crosswind for the whole path; the trajectory model assumes one constant wind.
 - Wind is usually the largest error source past ~500 m: present windage per 1 m/s (or 1 mph) so the user can scale.
 
 ## 5. Spin drift, aerodynamic jump, Coriolis
 
 - **Spin drift** (yaw of repose): right-hand twist drifts right. Litz empirical fit: SD [in] = 1.25·(Sg + 1.2)·TOF^1.83. Many shooters zero out part of it at a medium range; state what the table includes.
-- **Aerodynamic jump**: a crosswind causes a small vertical deflection that depends on twist direction (for right twist, wind from the right raises impact, from the left lowers it). Magnitude depends on bullet and stability; full 6-DOF or measured models compute it. `scripts/trajectory.py` does not model it; mention it when crosswind is strong.
-- **Coriolis** (Earth rotation): horizontal deflection ≈ Ω·R·TOF·sin(latitude), to the right in the Northern Hemisphere, left in the Southern. **Eötvös** (vertical): shooting east impacts high, west low; proportional to cos(latitude)·sin(azimuth). Usually a few cm at 1000 m; relevant for ELR and precise first-round hits. The trajectory script computes both exactly in the integrator.
+- **Aerodynamic jump**: a crosswind causes a small vertical deflection that depends on twist direction (for right twist, wind from the right raises impact, from the left lowers it). Magnitude depends on bullet and stability; full 6-DOF or measured models compute it. The point-mass model does not include it; mention it when crosswind is strong.
+- **Coriolis** (Earth rotation): horizontal deflection ≈ Ω·R·TOF·sin(latitude), to the right in the Northern Hemisphere, left in the Southern. **Eötvös** (vertical): shooting east impacts high, west low; proportional to cos(latitude)·sin(azimuth). Usually a few cm at 1000 m; relevant for ELR and precise first-round hits. The trajectory model computes both in the integrator.
 
 ## 6. Stability
 
-- Gyroscopic stability factor Sg (Miller formula, `scripts/stability.py`): Sg ≥ 1.5 recommended for full BC; 1.0–1.5 marginal; < 1.0 unstable.
+- Gyroscopic stability factor Sg (Miller formula, see `computation-models.md`): Sg ≥ 1.5 recommended for full BC; 1.0–1.5 marginal; < 1.0 unstable.
 - Sg increases with faster twist, higher velocity, warmer/thinner air; decreases with longer bullets for the same weight (monolithic copper bullets are longer).
 - Check stability at the coldest, densest conditions expected (winter, sea level).
 - Use the measured length of the user's bullet; plastic tips add length but little mass, so full length gives a conservative (lower) Sg.
@@ -71,7 +71,7 @@
 ## 7. Inclined shots
 
 - Gravity acts perpendicular to the horizon; for an uphill or downhill shot the drop component perpendicular to the line of sight is smaller. Both up and downhill need less elevation than the same slant range on the flat.
-- "Rifleman's rule" (multiply horizontal distance) is an approximation; the script solves it exactly by rotating gravity into the line-of-sight frame. Use slant range and look angle as inputs.
+- "Rifleman's rule" (multiply horizontal distance) is an approximation; the trajectory model solves it exactly by rotating gravity into the line-of-sight frame. Use slant range and look angle as inputs.
 
 ## 8. Truing a solver
 

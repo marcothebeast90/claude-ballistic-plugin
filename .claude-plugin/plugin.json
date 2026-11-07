@@ -1,7 +1,7 @@
 {
   "name": "long-range-ballistics",
   "displayName": "Long-Range Ballistics",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Internal and external ballistics for long-range rifle shooters and handloaders: load and pressure analysis from published data and simulation, trajectory and wind solutions, bullet stability. Never invents load data, BC or powder parameters.",
   "author": {
     "name": "Marco Zuin",

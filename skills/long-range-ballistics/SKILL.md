@@ -15,7 +15,7 @@ These exist because a wrong number in this field can damage a rifle, injure the 
 2. **Load development starts from the published starting load** and works up in small increments while watching velocity and pressure signs. Say this whenever giving guidance on charges, without lecturing experienced users at length.
 3. **Never invent BC values or bullet dimensions.** Use manufacturer data (state G1 or G7) or measured values from the user. Independently measured G7 values (e.g. Applied Ballistics / Litz) are preferred; flag manufacturer G1 values as often optimistic.
 4. **Show inputs and assumptions** for every computed number (MV, BC + drag model, sight height, zero, atmosphere, twist, bullet length). A firing solution without stated inputs cannot be checked.
-5. **Compute, don't estimate.** Use the bundled scripts (below) or Python for trajectories, stability and anything beyond trivial arithmetic. Round only in the final output.
+5. **Compute, don't estimate.** Write and run Python (see Calculations below) for trajectories, stability and anything beyond trivial arithmetic. Round only in the final output.
 6. **Say what you don't know.** If the answer depends on data you don't have (lot-specific temperature sensitivity, real bullet length, station pressure), ask for it or state the assumption clearly.
 
 ## Scope: classify the question first
@@ -39,10 +39,10 @@ Every time a user asks about a propellant (a specific powder, a load using it, i
 2. **Look up the producer's website** (WebSearch / WebFetch) for the current technical datasheet: composition (single base, double base, NG %), grain shape and dimensions, bulk density, heat of explosion / energy content, temperature sensitivity, and any notice of reformulation. Cite the page and its date. If a value is not published, say so; do not fill it in from memory or from another powder.
 3. **Do not judge overpressure only from the producer's load tables.** Assess pressure by interior-ballistics simulation, the way GRT and QuickLOAD do, then compare with the published data:
    - If the user has GRT or QuickLOAD, ask for its output (predicted Pmax, load density, burnt fraction at muzzle, calibrated vivacity) or the powder/case parameters they used, and analyse it.
-   - Run `scripts/interior.py` as an independent cross-check, **only with real powder parameters** (from the producer's datasheet, published thermochemistry, or a GRT/QuickLOAD powder file the user supplies). Calibrate it with the user's measured velocity when available. Never run it with guessed powder parameters: a precise-looking but invented pressure is more dangerous than no number.
+   - Run the interior ballistics model (`references/computation-models.md` §5) as an independent cross-check, **only with real powder parameters** (from the producer's datasheet, published thermochemistry, or a GRT/QuickLOAD powder file the user supplies). Calibrate it with the user's measured velocity when available. Never run it with guessed powder parameters: a precise-looking but invented pressure is more dangerous than no number.
    - Compare the predicted pressure with the cartridge's **CIP Pmax** (bar) or **SAAMI MAP** (psi), looked up from the CIP tables or SAAMI standard. CIP and SAAMI use different measurement methods; compare each prediction only with the limit of the same standard.
    - Then state explicitly whether the charge is **above the producer's published maximum** for that combination, and by how much (gr and %).
-4. **Present the verdict as a model estimate**, with its uncertainty (the heat-loss sweep of `interior.py` shows how far the prediction can move). A simulation can show that a load is likely over pressure; it can never prove a load is safe. Real pressure varies with lot, temperature, brass, primer and barrel; the user verifies with velocity against published data and stops at the first pressure sign.
+4. **Present the verdict as a model estimate**, with its uncertainty (the heat-loss sweep of the interior model shows how far the prediction can move). A simulation can show that a load is likely over pressure; it can never prove a load is safe. Real pressure varies with lot, temperature, brass, primer and barrel; the user verifies with velocity against published data and stops at the first pressure sign.
 
 ## Bullet questions (mandatory procedure)
 
@@ -54,7 +54,7 @@ Every time a user asks about a bullet (a load, BC, velocity at distance, traject
    - **BC with its drag model**: G1 and/or G7 as published, with velocity bands if given, and the source of each value
    - recommended twist rate, if published
 3. Cite the page for every value. If a value is not published for that P/N, say so and ask the user to measure it (e.g. bullet length with calipers). Never take values from a similar bullet, another weight or another version.
-4. Use these exact values in `trajectory.py` (BC + model), `stability.py` (length) and `interior.py` (length, seating depth).
+4. Use these exact values in the trajectory (BC + model), stability (length) and interior (length, seating depth) calculations.
 
 ## Brass / case questions (mandatory procedure, internal ballistics only)
 
@@ -73,13 +73,15 @@ Ask for measured water capacity (fired, sized brass, grains H2O) for any pressur
 - **Station pressure** (absolute, what a Kestrel or phone barometer at the shooting position reads) is not **barometric / QNH** (sea-level corrected, what weather reports give). Solvers need station pressure, or barometric + altitude. Mixing them is one of the most common errors; check which one the user has.
 - Wind: state if a value is full-value or an effective crosswind component, and which clock direction it comes from.
 
-## Bundled scripts
+## Calculations
 
-Both scripts take explicit-unit arguments (e.g. `--mv-ms` or `--mv-fps`) and print their inputs, so the output can be pasted with its assumptions.
+This skill ships no executable code. When a question needs a number, write the Python yourself in the sandbox, following `references/computation-models.md` exactly (equations, conventions, defaults), run it, and report the result with its inputs and assumptions. The models:
 
-- `scripts/trajectory.py` — 3-DOF point-mass solver with G1/G7 tables, air density from temperature/station pressure/humidity, wind, look angle, Coriolis/Eötvös (with `--latitude` and `--azimuth`), Litz spin drift (with weight, diameter, length, twist). Prints drop, elevation and windage holds in MRAD and MOA, velocity, Mach, energy, TOF, and marks where the bullet drops below Mach 1.2. Requires `pip install py-ballisticcalc` (only its drag tables are used; add `--break-system-packages` if pip refuses). Run `python3 scripts/trajectory.py -h` for all options.
-- `scripts/interior.py` — lumped-parameter interior ballistics (Résal energy equation, Lagrange pressure gradient, geometric form function). Predicts peak breech pressure and muzzle velocity from case capacity, seating depth, barrel length, charge and powder parameters; can calibrate vivacity to a measured velocity and sweeps heat loss 0–30 % to give a conservative (highest) pressure. Compares to a CIP/SAAMI limit (`--pmax-bar`) and to the producer's max charge (`--book-max-gr`). Runtime ~5–10 s. It is a simplified classical model, not GRT's model; expect differences from GRT/QuickLOAD and explain them.
-- `scripts/stability.py` — Miller stability factor Sg with velocity and atmosphere corrections, plus the slowest twist giving Sg 1.5.
+- **Trajectory**: 3-DOF point-mass with standard G1/G7 drag tables (taken from the open-source `py-ballisticcalc` package, never typed from memory), atmosphere from temperature/station pressure/humidity, wind, look angle, optional Coriolis/Eötvös and Litz spin drift. Outputs drop, holds in MRAD and MOA, velocity, Mach, energy, time of flight; flags Mach 1.2.
+- **Interior ballistics**: lumped-parameter Résal/Lagrange model with geometric form function, calibration to measured velocity and a 0–30 % heat-loss sweep giving a conservative (highest) pressure. Simplified classical model, not GRT's; expect and explain differences from GRT/QuickLOAD.
+- **Stability**: Miller Sg and slowest twist for Sg 1.5.
+
+Run the validation checks in section 6 of that file before trusting a new piece of code (e.g. trajectory heights against `py-ballisticcalc`'s own calculator, step-size convergence for the interior model). If a check fails, fix the code before giving any number.
 
 Present results as a table and list the assumptions under it. If the user has a solver result (Kestrel, Applied Ballistics, Hornady 4DOF, Strelok, etc.), compare and explain the differences rather than declaring one right; custom drag models (CDM) and 4DOF solvers are generally more accurate than G7 point-mass in the transonic zone.
 
@@ -88,6 +90,7 @@ Present results as a table and list the assumptions under it. If the user has a 
 Read the one that fits the question before answering in depth:
 
 - `references/internal-ballistics.md` — powder, primers, brass, seating depth, pressure signs, velocity statistics, load development methods, simulators (QuickLOAD, GRT).
+- `references/computation-models.md` — equations, conventions and validation checks for every calculation (trajectory, atmosphere, stability, interior ballistics). Read it before writing any calculation code.
 - `references/external-ballistics.md` — formulas and constants, drag models, atmosphere, wind, spin drift, Coriolis, aerodynamic jump, stability, truing procedure, common error sources.
 
 ## Answer patterns
@@ -95,17 +98,17 @@ Read the one that fits the question before answering in depth:
 **Load question** (charge, powder choice, pressure, velocity):
 1. Identify cartridge, bullet P/N, powder (+ production year / lot), primer, brass (brand, LR or SR pocket) and its water capacity, barrel length, twist, COAL or CBTO.
 2. Fetch the powder's current datasheet and the bullet's P/N data (geometry, G1/G7 BC) from the producers (see the mandatory procedures above).
-3. Pressure assessment: GRT/QuickLOAD output if available, plus `scripts/interior.py` with real parameters; compare with CIP/SAAMI limit.
+3. Pressure assessment: GRT/QuickLOAD output if available, plus the interior model with real parameters; compare with CIP/SAAMI limit.
 4. Report published load data (source) and whether the charge is over the producer's maximum, or state that no data exists for this combination.
 5. Analyse the user's data (velocity, SD/ES, signs on cases and primers) against simulation and published reference.
 6. Recommend the next step in testing, never a guaranteed "safe" charge.
 
 **Trajectory / dope question:**
 1. Collect bullet P/N (then BC + model and length from the manufacturer), MV, sight height, zero, atmosphere, wind, range(s); ask for missing essentials, assume and state the rest (e.g. ICAO standard atmosphere).
-2. Run `scripts/trajectory.py`.
+2. Compute with the trajectory model.
 3. Give the table, the assumptions, and notes on transonic range and the main uncertainty (usually wind, then MV).
 
-**Stability / twist question:** run `scripts/stability.py` with the real measured bullet length; explain the margin at the coldest/densest conditions the user expects.
+**Stability / twist question:** compute Miller Sg with the real measured bullet length; explain the margin at the coldest/densest conditions the user expects.
 
 ## Output style
 

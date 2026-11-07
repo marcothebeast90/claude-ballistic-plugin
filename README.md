@@ -8,8 +8,8 @@ A Claude plugin for long-range rifle shooters and handloaders, covering internal
 - **Propellant questions**: asks for the powder's production year/lot and checks the producer's current datasheet, because powders can be reformulated under the same name.
 - **Bullet questions**: asks for the manufacturer's part number and retrieves that exact bullet's geometry and G1/G7 BC, preferring manufacturer and independently measured data; retailer-only data is labelled as such.
 - **Brass**: always asks for brand and primer pocket size (large or small rifle), e.g. for 6.5 Creedmoor, where both exist.
-- **Pressure cross-check**: analyses GRT / QuickLOAD output and runs its own interior ballistics model with real powder parameters only, compares to CIP / SAAMI limits, and flags charges above the producer's published maximum.
-- **Firing solutions**: point-mass trajectory solver with G1/G7, atmosphere, wind, incline, Coriolis/Eötvös and spin drift; output in MRAD and MOA, metric or imperial.
+- **Pressure cross-check**: analyses GRT / QuickLOAD output and computes its own interior ballistics model with real powder parameters only, compares to CIP / SAAMI limits, and flags charges above the producer's published maximum.
+- **Firing solutions**: point-mass trajectory model with G1/G7, atmosphere, wind, incline, Coriolis/Eötvös and spin drift; output in MRAD and MOA, metric or imperial.
 - **Stability**: Miller stability factor and slowest adequate twist.
 
 ## Install
@@ -24,17 +24,14 @@ Ask Claude a ballistics question in plain language, for example "is my 6.5 Creed
 ## What it runs, sends and fetches
 
 - **Web lookups**: Claude searches the web and opens powder, bullet and brass manufacturers' pages (and retailer or independent measurement pages as a fallback) to read published data. Only the product names and part numbers in your question are used as search terms.
-- **Local scripts** (`skills/long-range-ballistics/scripts/`), run in Claude's code sandbox, readable Python, no network access:
-  - `trajectory.py`: trajectory solver. Imports the standard G1/G7 drag tables from the open-source `py-ballisticcalc` package (LGPL-3.0); if it is missing, the skill tells Claude to install it with pip.
-  - `interior.py`: lumped-parameter interior ballistics (pressure) model, standard library only.
-  - `stability.py`: Miller stability formula, standard library only.
+- **No bundled code**: the plugin contains only Markdown, JSON, a license and an icon. When a calculation is needed, Claude writes Python in its own code sandbox following the equations documented in `skills/long-range-ballistics/references/computation-models.md`. For trajectories it installs the open-source `py-ballisticcalc` package (LGPL-3.0) with pip, only to read the standard G1/G7 drag tables.
 - The plugin stores no data and sends nothing to any server of its own.
 
 ## Design principles and validation
 
 - Never invents load data, BC values, bullet dimensions or powder parameters; every number comes with its inputs and assumptions.
 - A simulation can flag a probable over-pressure; it never certifies a load as safe.
-- `trajectory.py` matches py-ballisticcalc 3.1.1 for bullet height, velocity and time of flight at 1000 m. `interior.py` is numerically converged but has not been validated against instrumented pressure barrels; it is a cross-check, not a substitute for published data.
+- The documented trajectory model was checked against py-ballisticcalc 3.1.1 (bullet height, velocity and time of flight at 1000 m). The interior ballistics model is a simplified classical model, not validated against instrumented pressure barrels; it is a cross-check, not a substitute for published data.
 
 ## Disclaimer
 

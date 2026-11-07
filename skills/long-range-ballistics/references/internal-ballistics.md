@@ -10,7 +10,7 @@
 7. Velocity statistics
 8. Load development methods
 9. Temperature sensitivity
-10. Input checklist for `scripts/interior.py`
+10. Input checklist for the interior ballistics model
 
 ## 1. Propellant
 
@@ -25,7 +25,7 @@
 
 - **CIP** (Europe and members): Pmax in bar, measured with a piezo transducer per CIP procedure. **SAAMI** (USA): MAP in psi, transducer method per SAAMI standard. Older SAAMI values in "CUP" (copper crusher) are a different unit, not convertible 1:1 to psi. Always look up the limit for the exact cartridge from CIP tables or the SAAMI standard; do not quote from memory.
 - **Producer load data** is measured in a test barrel with specific components. Your rifle/brass/primer/lot differs, so treat a max load as a max for their test conditions.
-- **Simulators** (GRT, QuickLOAD, `scripts/interior.py`) solve a lumped-parameter model: burning law + energy balance + bullet motion. Their output depends heavily on:
+- **Simulators** (GRT, QuickLOAD, the interior model in `computation-models.md`) solve a lumped-parameter model: burning law + energy balance + bullet motion. Their output depends heavily on:
   - case capacity (measure water capacity of fired, sized brass; a 1 gr H2O error can shift pressure a lot)
   - seating depth / volume under the bullet
   - powder parameters (energy, burn rate/vivacity, progressivity); these are the largest uncertainty
@@ -63,7 +63,7 @@ Ejector marks/swipes, cratered or pierced primers, flattened primers, sticky or 
 
 - SD from 5 shots has a very wide confidence interval; 10–20+ shots are needed to compare loads meaningfully.
 - ES grows with sample size; SD is the more useful statistic.
-- Typical goal for long range: single-digit SD in m/s (low double-digit fps), but vertical dispersion at distance is what matters: compute it with the trajectory script.
+- Typical goal for long range: single-digit SD in m/s (low double-digit fps), but vertical dispersion at distance is what matters: compute it with the trajectory model.
 - Chronograph: confirm consistent setup (Doppler like Garmin Xero / LabRadar vs optical); Doppler devices may need angle/placement checks.
 
 ## 8. Load development methods
@@ -80,7 +80,7 @@ Ejector marks/swipes, cratered or pierced primers, flattened primers, sticky or 
 - A load at max in winter may be over pressure in summer. Develop at the highest expected ammo temperature, or leave margin.
 - Ammunition left in a hot chamber or in the sun heats faster than the air; record powder temperature, not air temperature.
 
-## 10. Input checklist for `scripts/interior.py`
+## 10. Input checklist for the interior ballistics model
 
 | Input | Where it comes from |
 |---|---|
